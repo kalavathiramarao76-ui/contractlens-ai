@@ -34,6 +34,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               { href: "/app/analyze", label: "Analyze" },
               { href: "/app/compare", label: "Compare" },
               { href: "/app/explain", label: "Explain" },
+              { href: "/app/settings", label: "Settings" },
             ].map((link) => (
               <Link
                 key={link.href}

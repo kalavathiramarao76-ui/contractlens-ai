@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useStream } from "@/lib/useStream";
 import FavoriteButton from "@/components/FavoriteButton";
+import ExportMenu from "@/components/ExportMenu";
 
 export default function ComparePage() {
   const [contractA, setContractA] = useState("");
@@ -134,6 +135,7 @@ ${contractB}`);
               itemLabel="Contract Comparison"
               size="sm"
             />
+            <ExportMenu content={result} title="Contract Comparison" />
             <span className="text-xs text-[var(--color-muted)]">Comparison Result</span>
           </div>
           <div

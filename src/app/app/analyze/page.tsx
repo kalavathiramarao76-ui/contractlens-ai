@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useStream } from "@/lib/useStream";
 import FavoriteButton from "@/components/FavoriteButton";
+import ExportMenu from "@/components/ExportMenu";
 
 const SAMPLE_CONTRACT = `FREELANCE SERVICE AGREEMENT
 
@@ -139,11 +140,14 @@ ${contract}`);
         <div className="animate-fade-in delay-200">
           <div className="flex items-center gap-2 mb-4">
             {result && (
-              <FavoriteButton
-                itemId="contractlens-analysis"
-                itemLabel="Contract Analysis"
-                size="sm"
-              />
+              <>
+                <FavoriteButton
+                  itemId="contractlens-analysis"
+                  itemLabel="Contract Analysis"
+                  size="sm"
+                />
+                <ExportMenu content={result} title="Contract Analysis" />
+              </>
             )}
             {(["analysis", "raw"] as const).map((tab) => (
               <button

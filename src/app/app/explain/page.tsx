@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useStream } from "@/lib/useStream";
 import FavoriteButton from "@/components/FavoriteButton";
+import ExportMenu from "@/components/ExportMenu";
 
 const SAMPLE_CLAUSES = [
   {
@@ -144,6 +145,7 @@ ${clause}`);
                     itemLabel="Clause Explanation"
                     size="sm"
                   />
+                  <ExportMenu content={result} title="Clause Explanation" />
                   <span className="text-xs text-[var(--color-muted)]">Explanation</span>
                 </div>
                 <div
