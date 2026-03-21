@@ -16,9 +16,27 @@
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
+/* Theme variables */
+:root, [data-theme="dark"] {
+  --glass-rgb: 17, 17, 17;
+}
+
+[data-theme="light"] {
+  --color-background: #fafafa;
+  --color-foreground: #18181b;
+  --color-card: #ffffff;
+  --color-elevated: #f4f4f5;
+  --color-border: #e4e4e7;
+  --color-muted: #71717a;
+  --color-accent: #e11d48;
+  --color-accent-light: #be123c;
+  --color-accent-dark: #9f1239;
+  --glass-rgb: 255, 255, 255;
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: #333 transparent;
+  scrollbar-color: var(--color-border) transparent;
 }
 
 body {
@@ -27,6 +45,7 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Noise texture overlay */
@@ -101,4 +120,10 @@ textarea:focus {
 .prose-contract strong {
   color: var(--color-accent-light);
   font-weight: 600;
+}
+
+/* Confetti animation */
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
