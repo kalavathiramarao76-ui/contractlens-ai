@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useStream } from "@/lib/useStream";
+import FavoriteButton from "@/components/FavoriteButton";
 
 export default function ComparePage() {
   const [contractA, setContractA] = useState("");
@@ -127,6 +128,14 @@ ${contractB}`);
       {/* Result */}
       {result && (
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-6 animate-fade-in">
+          <div className="flex items-center gap-2 mb-4">
+            <FavoriteButton
+              itemId="contractlens-comparison"
+              itemLabel="Contract Comparison"
+              size="sm"
+            />
+            <span className="text-xs text-[var(--color-muted)]">Comparison Result</span>
+          </div>
           <div
             className="prose-contract whitespace-pre-wrap"
             dangerouslySetInnerHTML={{ __html: formatMarkdown(result) }}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useStream } from "@/lib/useStream";
+import FavoriteButton from "@/components/FavoriteButton";
 
 const SAMPLE_CONTRACT = `FREELANCE SERVICE AGREEMENT
 
@@ -137,6 +138,13 @@ ${contract}`);
         {/* Output */}
         <div className="animate-fade-in delay-200">
           <div className="flex items-center gap-2 mb-4">
+            {result && (
+              <FavoriteButton
+                itemId="contractlens-analysis"
+                itemLabel="Contract Analysis"
+                size="sm"
+              />
+            )}
             {(["analysis", "raw"] as const).map((tab) => (
               <button
                 key={tab}

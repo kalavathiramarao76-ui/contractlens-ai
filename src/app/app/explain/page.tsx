@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useStream } from "@/lib/useStream";
+import FavoriteButton from "@/components/FavoriteButton";
 
 const SAMPLE_CLAUSES = [
   {
@@ -136,10 +137,20 @@ ${clause}`);
         <div className="animate-fade-in delay-200">
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-6 min-h-[400px] overflow-auto">
             {result ? (
-              <div
-                className="prose-contract whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: formatMarkdown(result) }}
-              />
+              <>
+                <div className="flex items-center gap-2 mb-4">
+                  <FavoriteButton
+                    itemId="contractlens-explanation"
+                    itemLabel="Clause Explanation"
+                    size="sm"
+                  />
+                  <span className="text-xs text-[var(--color-muted)]">Explanation</span>
+                </div>
+                <div
+                  className="prose-contract whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: formatMarkdown(result) }}
+                />
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center h-full min-h-[350px] text-[var(--color-muted)]">
                 <svg
