@@ -60,7 +60,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </nav>
 
       {/* Content */}
-      <main className="flex-1">
+      <main role="main" className="flex-1">
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
     </div>

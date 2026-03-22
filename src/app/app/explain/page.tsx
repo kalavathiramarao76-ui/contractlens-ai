@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStream } from "@/lib/useStream";
 import FavoriteButton from "@/components/FavoriteButton";
 import ExportMenu from "@/components/ExportMenu";
+import { useToast } from "@/components/ToastProvider";
 
 const SAMPLE_CLAUSES = [
   {
@@ -23,6 +24,19 @@ const SAMPLE_CLAUSES = [
 export default function ExplainPage() {
   const [clause, setClause] = useState("");
   const { result, loading, generate } = useStream();
+  const { addToast } = useToast();
+  const prevLoading = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (prevLoading.current && !loading) {
+      if (result && !result.startsWith("An error")) {
+        addToast({ title: "Clause explained", variant: "success" });
+      } else if (result.startsWith("An error")) {
+        addToast({ title: "Explanation failed", variant: "error" });
+      }
+    }
+    prevLoading.current = loading;
+  }, [loading, result, addToast]);
 
   const explain = () => {
     if (!clause.trim()) return;
@@ -78,6 +92,7 @@ ${clause}`);
             value={clause}
             onChange={(e) => setClause(e.target.value)}
             placeholder="Paste a contract clause here..."
+            aria-label="Clause text input"
             className="w-full h-[250px] p-4 rounded-xl text-sm font-mono leading-relaxed"
           />
 
@@ -102,6 +117,7 @@ ${clause}`);
           <button
             onClick={explain}
             disabled={loading || !clause.trim()}
+            aria-label={loading ? "Explaining clause" : "Explain this clause"}
             className="w-full py-3.5 rounded-xl bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold transition-all flex items-center justify-center gap-2"
           >
             {loading ? (

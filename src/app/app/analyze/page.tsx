@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStream } from "@/lib/useStream";
 import FavoriteButton from "@/components/FavoriteButton";
 import ExportMenu from "@/components/ExportMenu";
+import { useToast } from "@/components/ToastProvider";
 
 const SAMPLE_CONTRACT = `FREELANCE SERVICE AGREEMENT
 
@@ -29,6 +30,19 @@ export default function AnalyzePage() {
   const [contract, setContract] = useState("");
   const { result, loading, generate } = useStream();
   const [activeTab, setActiveTab] = useState<"analysis" | "raw">("analysis");
+  const { addToast } = useToast();
+  const prevLoading = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (prevLoading.current && !loading) {
+      if (result && !result.startsWith("An error")) {
+        addToast({ title: "Contract analyzed", variant: "success" });
+      } else if (result.startsWith("An error")) {
+        addToast({ title: "Analysis failed", variant: "error" });
+      }
+    }
+    prevLoading.current = loading;
+  }, [loading, result, addToast]);
 
   const analyze = () => {
     if (!contract.trim()) return;
@@ -90,6 +104,7 @@ ${contract}`);
             </label>
             <button
               onClick={() => setContract(SAMPLE_CONTRACT)}
+              aria-label="Load sample contract"
               className="text-xs text-[var(--color-accent-light)] hover:text-[var(--color-accent)] transition-colors"
             >
               Load sample contract
@@ -99,11 +114,13 @@ ${contract}`);
             value={contract}
             onChange={(e) => setContract(e.target.value)}
             placeholder="Paste your contract text here..."
+            aria-label="Contract text input"
             className="w-full h-[500px] p-4 rounded-xl text-sm font-mono leading-relaxed"
           />
           <button
             onClick={analyze}
             disabled={loading || !contract.trim()}
+            aria-label={loading ? "Analyzing contract" : "Analyze contract"}
             className="w-full py-3.5 rounded-xl bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold transition-all flex items-center justify-center gap-2"
           >
             {loading ? (

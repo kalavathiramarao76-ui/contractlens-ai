@@ -1,14 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStream } from "@/lib/useStream";
 import FavoriteButton from "@/components/FavoriteButton";
 import ExportMenu from "@/components/ExportMenu";
+import { useToast } from "@/components/ToastProvider";
 
 export default function ComparePage() {
   const [contractA, setContractA] = useState("");
   const [contractB, setContractB] = useState("");
   const { result, loading, generate } = useStream();
+  const { addToast } = useToast();
+  const prevLoading = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (prevLoading.current && !loading) {
+      if (result && !result.startsWith("An error")) {
+        addToast({ title: "Contracts compared", variant: "success" });
+      } else if (result.startsWith("An error")) {
+        addToast({ title: "Comparison failed", variant: "error" });
+      }
+    }
+    prevLoading.current = loading;
+  }, [loading, result, addToast]);
 
   const compare = () => {
     if (!contractA.trim() || !contractB.trim()) return;
@@ -76,6 +90,7 @@ ${contractB}`);
             value={contractA}
             onChange={(e) => setContractA(e.target.value)}
             placeholder="Paste first contract..."
+            aria-label="Contract A text input"
             className="w-full h-[300px] p-4 rounded-xl text-sm font-mono leading-relaxed"
           />
         </div>
@@ -87,6 +102,7 @@ ${contractB}`);
             value={contractB}
             onChange={(e) => setContractB(e.target.value)}
             placeholder="Paste second contract..."
+            aria-label="Contract B text input"
             className="w-full h-[300px] p-4 rounded-xl text-sm font-mono leading-relaxed"
           />
         </div>
@@ -95,6 +111,7 @@ ${contractB}`);
       <button
         onClick={compare}
         disabled={loading || !contractA.trim() || !contractB.trim()}
+        aria-label={loading ? "Comparing contracts" : "Compare contracts"}
         className="w-full py-3.5 rounded-xl bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold transition-all flex items-center justify-center gap-2 mb-8 animate-fade-in delay-200"
       >
         {loading ? (
