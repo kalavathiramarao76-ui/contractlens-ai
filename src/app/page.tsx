@@ -1,6 +1,186 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+
+/* ─── Letter Reveal ─── */
+function LetterReveal({ text, className = "", delay = 0 }: {
+  text: string; className?: string; delay?: number;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setVisible(true); return; }
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { threshold: 0.2 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <span ref={ref} className={className} aria-label={text}>
+      {text.split("").map((ch, i) => (
+        <span
+          key={i}
+          className="inline-block transition-all duration-700"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(18px)",
+            transitionDelay: visible ? `${delay + i * 32}ms` : "0ms",
+          }}
+        >
+          {ch === " " ? "\u00A0" : ch}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/* ─── Scroll Counter ─── */
+function ScrollCounter({ end, suffix = "", duration = 900 }: {
+  end: number; suffix?: string; duration?: number;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setValue(end); return; }
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        obs.disconnect();
+        const start = performance.now();
+        const tick = (now: number) => {
+          const t = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          setValue(Math.round(eased * end));
+          if (t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }, { threshold: 0.3 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [end, duration]);
+
+  return <span ref={ref}>{value}{suffix}</span>;
+}
+
+/* ─── Risk Gauge Sweep ─── */
+function RiskGauge({ score = 73, className = "" }: { score?: number; className?: string }) {
+  const ref = useRef<SVGSVGElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setVisible(true); return; }
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { threshold: 0.3 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // Gauge arc: 180 degrees, score maps to 0-180
+  const needleAngle = visible ? -90 + (score / 100) * 180 : -90;
+
+  return (
+    <svg ref={ref} viewBox="0 0 200 120" className={className} fill="none">
+      {/* Arc background */}
+      <path
+        d="M 20 100 A 80 80 0 0 1 180 100"
+        stroke="var(--color-border)"
+        strokeWidth="8"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Arc colored segments */}
+      <path
+        d="M 20 100 A 80 80 0 0 1 66 34"
+        stroke="#22c55e"
+        strokeWidth="8"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.6"
+      />
+      <path
+        d="M 66 34 A 80 80 0 0 1 134 34"
+        stroke="#eab308"
+        strokeWidth="8"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.6"
+      />
+      <path
+        d="M 134 34 A 80 80 0 0 1 180 100"
+        stroke="#ef4444"
+        strokeWidth="8"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.6"
+      />
+      {/* Needle */}
+      <line
+        x1="100"
+        y1="100"
+        x2="100"
+        y2="30"
+        stroke="var(--color-accent)"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        style={{
+          transform: `rotate(${needleAngle}deg)`,
+          transformOrigin: "100px 100px",
+          transition: visible ? "transform 1s cubic-bezier(0.16, 1, 0.3, 1)" : "none",
+        }}
+      />
+      {/* Center dot */}
+      <circle cx="100" cy="100" r="5" fill="var(--color-accent)" />
+      {/* Score text */}
+      <text x="100" y="116" textAnchor="middle" fill="var(--color-muted)" fontSize="10" fontFamily="monospace">
+        {visible ? score : 0}/100 risk
+      </text>
+    </svg>
+  );
+}
+
+/* ─── Fade In Observer ─── */
+function useFadeIn() {
+  const refs = useRef<(HTMLElement | null)[]>([]);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      refs.current.forEach(el => { if (el) { el.style.opacity = "1"; el.style.transform = "none"; } });
+      return;
+    }
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          (e.target as HTMLElement).style.opacity = "1";
+          (e.target as HTMLElement).style.transform = "translateY(0)";
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+    refs.current.forEach(el => { if (el) obs.observe(el); });
+    return () => obs.disconnect();
+  }, []);
+
+  const addRef = (el: HTMLElement | null) => {
+    if (el && !refs.current.includes(el)) refs.current.push(el);
+  };
+  return addRef;
+}
 
 export default function Home() {
+  const addRef = useFadeIn();
+
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen px-6 overflow-hidden">
       {/* Background glow */}
@@ -16,11 +196,18 @@ export default function Home() {
         </div>
 
         {/* Hero text */}
-        <h1 className="text-7xl sm:text-8xl md:text-[9rem] font-bold tracking-tighter leading-[0.85] animate-slide-up">
-          Read between
+        <h1 className="text-7xl sm:text-8xl md:text-[9rem] font-bold tracking-tighter leading-[0.85]">
+          <LetterReveal text="Read between" />
           <br />
-          <span className="text-[var(--color-accent)]">the lines.</span>
+          <span className="text-[var(--color-accent)]">
+            <LetterReveal text="the lines." delay={400} />
+          </span>
         </h1>
+
+        {/* Risk gauge */}
+        <div className="max-w-[200px] mx-auto">
+          <RiskGauge score={73} className="w-full h-auto" />
+        </div>
 
         {/* Subtitle */}
         <p className="max-w-2xl mx-auto text-lg sm:text-xl text-[var(--color-muted)] animate-fade-in delay-200">
@@ -58,8 +245,24 @@ export default function Home() {
           </Link>
         </div>
 
+        {/* Stats row with scroll counters */}
+        <div className="flex items-center justify-center gap-12 pt-4 animate-fade-in delay-300">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-[var(--color-foreground)]"><ScrollCounter end={100} suffix="+" /></div>
+            <div className="text-xs text-[var(--color-muted)]">Clauses Analyzed</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-[var(--color-foreground)]"><ScrollCounter end={5} /></div>
+            <div className="text-xs text-[var(--color-muted)]">Risk Categories</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-[var(--color-foreground)]">&lt;<ScrollCounter end={30} suffix="s" /></div>
+            <div className="text-xs text-[var(--color-muted)]">Analysis Time</div>
+          </div>
+        </div>
+
         {/* Feature grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-16 animate-fade-in delay-400">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-16">
           {[
             {
               icon: "M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z",
@@ -76,10 +279,17 @@ export default function Home() {
               title: "Plain English",
               desc: "Click any clause for a human-readable explanation",
             },
-          ].map((f) => (
+          ].map((f, idx) => (
             <div
               key={f.title}
-              className="p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-accent)]/30 transition-colors"
+              ref={addRef}
+              className="p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-accent)]/30 transition-all duration-700"
+              style={{
+                opacity: 0,
+                transform: "translateY(24px)",
+                transitionDelay: `${idx * 80}ms`,
+                willChange: "transform, opacity",
+              }}
             >
               <svg
                 className="w-8 h-8 text-[var(--color-accent)] mb-3"
