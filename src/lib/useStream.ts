@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { incrementUsage } from "./usage";
 
 export function useStream() {
   const [result, setResult] = useState("");
@@ -50,6 +51,7 @@ export function useStream() {
           }
         }
       }
+      incrementUsage();
     } catch (err) {
       console.error(err);
       setResult("An error occurred. Please try again.");

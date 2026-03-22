@@ -6,6 +6,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import OnboardingTour from "@/components/OnboardingTour";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { getFavoritesCount } from "@/components/FavoriteButton";
+import { UserMenu } from "@/components/AuthGate";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [favCount, setFavCount] = useState(0);
@@ -55,6 +56,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             )}
             <ThemeToggle />
+            <UserMenu />
           </div>
         </div>
       </nav>
