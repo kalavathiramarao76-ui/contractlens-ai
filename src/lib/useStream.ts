@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { incrementUsage } from "./usage";
 
 export function useStream() {
   const [result, setResult] = useState("");
@@ -15,6 +14,14 @@ export function useStream() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
+
+      if (res.status === 429) {
+        const errorData = await res.json();
+        if (errorData.error === "FREE_LIMIT_REACHED") {
+          window.dispatchEvent(new CustomEvent("usage-changed", { detail: errorData.count }));
+          return;
+        }
+      }
 
       if (!res.ok) throw new Error("API error");
 
@@ -51,7 +58,6 @@ export function useStream() {
           }
         }
       }
-      incrementUsage();
     } catch (err) {
       console.error(err);
       setResult("An error occurred. Please try again.");
